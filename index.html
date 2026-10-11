@@ -196,6 +196,9 @@ body{background:#080d19}
 .home-indicator,.lock-circle{touch-action:manipulation}
 .app-cell,button,[data-app],[data-action]{-webkit-tap-highlight-color:transparent}
 @media(max-width:690px){.home-view,.scroll-content{overscroll-behavior:contain}}
+
+/* Accessibility: do not hide icons when reduced motion is enabled. */
+@media(prefers-reduced-motion:reduce){.app-grid .app-cell,.home-dock .app-cell{opacity:1!important}}
 </style>
   
 </head>
