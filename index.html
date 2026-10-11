@@ -199,6 +199,26 @@ body{background:#080d19}
 
 /* Accessibility: do not hide icons when reduced motion is enabled. */
 @media(prefers-reduced-motion:reduce){.app-grid .app-cell,.home-dock .app-cell{opacity:1!important}}
+
+/* NOVA Pocket: engedélykéréses, élő kamera */
+.camera-preview{background:#151a28}
+.camera-consent{position:absolute;z-index:4;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:24px;color:#fff;background:linear-gradient(155deg,#111c42bc,#50346586);backdrop-filter:blur(7px);overflow-y:auto}
+.camera-consent-icon{font-size:54px;filter:drop-shadow(0 9px 14px #0004)}
+.camera-consent h3{font-weight:760;font-size:22px;letter-spacing:-.03em;margin:0}
+.camera-consent p{font-size:12px;line-height:1.65;color:#f7f7ffde;margin:0 0 8px;max-width:290px}
+.camera-allow{background:linear-gradient(120deg,#94e3ff,#bfa3ff);color:#10172c;border:0;font-size:13px;font-weight:800;border-radius:16px;padding:14px 18px;max-width:100%;box-shadow:0 10px 22px #0004;touch-action:manipulation}
+.camera-allow:disabled{opacity:.7}
+.camera-file-label{display:inline-flex;justify-content:center;border:1px solid #fff9;background:#ffffff20;padding:10px 14px;border-radius:13px;color:white;font-size:12px;font-weight:650;cursor:pointer;touch-action:manipulation}
+.camera-controls{position:relative;gap:6px;padding:14px 2px 4px}
+.camera-flip,.camera-retry{border:0;border-radius:13px;color:#fff;background:#ffffff25;height:45px;min-width:42px;font-size:23px;touch-action:manipulation}
+.camera-flip.hidden,.camera-retry[hidden]{display:none!important}
+.camera-controls .shutter:disabled{opacity:.35;cursor:not-allowed}
+.camera-fine{padding:0 8px;min-height:39px;font-size:11px;line-height:1.5;color:#e3e8f4}
+.camera-capture-flash{position:absolute;z-index:12;inset:0;background:white;pointer-events:none;animation:novaFlash .4s ease-out forwards}
+@keyframes novaFlash{from{opacity:.96}to{opacity:0}}
+#cameraVideo[hidden]{display:none}
+@media(max-width:690px){.camera-consent{padding:18px 22px}.camera-consent h3{font-size:20px}}
+@media(max-height:630px){.camera-consent{gap:7px}.camera-consent-icon{font-size:37px}.camera-consent p{font-size:11px}.camera-allow{padding:10px}.camera-file-label{padding:8px}}
 </style>
   
 </head>
@@ -290,7 +310,9 @@ body{background:#080d19}
     calcDisplay: '0', calcStored: null, calcOp: null, calcNew: false,
     swElapsed: 0, swStart: 0, swRunning: false,
     musicPlaying: false, musicTrack: 0,
-    cameraStream: null
+    cameraStream: null,
+    cameraFacing: 'environment',
+    cameraRequest: 0
   };
   const contacts = { anna: { name: 'Anna', initials: 'A', className: '' }, mark: { name: 'Márk', initials: 'M', className: 'blue' } };
   const appDefs = {
@@ -358,7 +380,7 @@ body{background:#080d19}
     state.screenOn=true;state.locked=false;state.control=false;state.app=app;
     state.contact=null;state.noteId=null;state.currentPhoto=null;state.calling=false;
     render();
-    if(app==='camera')startCamera();
+    // Kamera-hozzáférést csak külön érintés után kérünk.
   }
   function render() {
     $('#offScreen').classList.toggle('hidden',state.screenOn);
@@ -366,7 +388,7 @@ body{background:#080d19}
     setWallpaper();
     $('#iphone').classList.toggle('sim-dark',state.dark);
     if (!state.screenOn){view.innerHTML='';return;}
-    if (state.control){view.innerHTML=controlHTML();applyViewAnimation('control');return;}
+    if (state.control){if(state.app==='camera')stopCamera();view.innerHTML=controlHTML();applyViewAnimation('control');return;}
     if(state.locked){view.innerHTML=lockHTML();applyViewAnimation('lock');updateClock();return;}
     view.innerHTML = state.app ? appHTML(state.app) : homeHTML();
     applyViewAnimation(state.app ? 'app' : 'home');
@@ -436,35 +458,148 @@ body{background:#080d19}
     return `<div class="app-page">${header('Fotók',`${state.photos.length} saját kép · ${demoPhotoClasses.length} mintakép`)}<div class="scroll-content"><div class="photo-grid">${state.photos.map((p,i)=>`<button class="photo-tile" data-photo="${1000+i}" title="Saját kép ${i+1}" style="background-image:url('${p.src}')"></button>`).join('')}${demoPhotoClasses.map((cl,i)=>`<button class="photo-tile ${cl}" data-photo="${i}" title="Mintakép ${i+1}"></button>`).join('')}</div><p class="fake-disclaimer" style="padding:2px 14px">A saját fotók ebben a böngészőben tárolódnak.</p></div></div>`;
   }
 
-  /* KAMERA */
-  function cameraHTML(){return `<div class="app-page camera-app"><div class="camera-preview" id="cameraPreview"><div class="camera-fallback" id="cameraFallback"><span class="camera-label">Kameranézet · hozzáférés nélkül demókép készül</span></div><video id="cameraVideo" autoplay muted playsinline hidden></video></div><div class="camera-controls"><button class="camera-thumb" data-action="open-photos" aria-label="Fotók megnyitása"></button><button class="shutter" data-action="shutter" title="Fénykép készítése" aria-label="Fénykép készítése"></button><button class="plain-button" data-action="camera-retry" style="color:white">↻</button></div><div class="camera-fine" id="cameraFine">Kameraengedéllyel valódi képet is készíthetsz (localhost/HTTPS).</div></div>`;}
+  /* KAMERA: valós HTTPS-kamera és egyértelmű engedélykérés */
+  function cameraHTML(){
+    const latest=state.photos[0]?.src;
+    return `<div class="app-page camera-app">
+      <div class="camera-preview" id="cameraPreview">
+        <div class="camera-fallback" id="cameraFallback">
+          <div class="camera-consent">
+            <div class="camera-consent-icon">📷</div>
+            <h3>Használd a kamerádat!</h3>
+            <p>A kamera csak akkor indul, ha megnyomod a gombot és a böngészőben engedélyezed.</p>
+            <button class="camera-allow" id="cameraStart" data-action="camera-start">📷 Kamera engedélyezése</button>
+            <label class="camera-file-label" for="cameraFile">Kép készítése / kiválasztása</label>
+            <input id="cameraFile" type="file" accept="image/*" capture="environment" hidden>
+          </div>
+        </div>
+        <video id="cameraVideo" autoplay muted playsinline webkit-playsinline hidden aria-label="Élő kamerakép"></video>
+      </div>
+      <div class="camera-controls">
+        <button class="camera-thumb" data-action="open-photos" aria-label="Fotók megnyitása" ${latest?`style="background-image:url('${latest}')"`:''}></button>
+        <button class="shutter" id="cameraShutter" data-action="shutter" title="Fénykép készítése" aria-label="Fénykép készítése" disabled></button>
+        <button class="camera-flip hidden" id="cameraSwap" data-action="camera-switch" aria-label="Előlapi és hátlapi kamera váltása" title="Kamera megfordítása">🔄</button>
+        <button class="camera-retry" id="cameraRetry" data-action="camera-stop" aria-label="Kamera leállítása" hidden>✕</button>
+      </div>
+      <div class="camera-fine" id="cameraFine" role="status" aria-live="polite">Engedélyezés után élő kamerakép jelenik meg. HTTPS szükséges.</div>
+    </div>`;
+  }
+  function setCameraMsg(message){
+    const info=$('#cameraFine');if(info)info.textContent=message;
+  }
+  function cameraErrorMessage(error){
+    if(!window.isSecureContext)return 'A kamera csak HTTPS-weboldalon használható.';
+    switch(error?.name){
+      case 'NotAllowedError':case 'PermissionDeniedError':
+        return 'A kameraengedélyt elutasítottad. A böngésző címsora melletti lakatnál újra engedélyezheted.';
+      case 'NotFoundError':case 'DevicesNotFoundError':return 'Nem található kamera a készüléken.';
+      case 'NotReadableError':case 'TrackStartError':return 'A kamera foglalt, vagy másik alkalmazás használja.';
+      case 'OverconstrainedError':return 'A választott kamera nem elérhető. Próbáld újra.';
+      default:return 'Nem sikerült elindítani a kamerát. Ellenőrizd az engedélyeket.';
+    }
+  }
+  function updateCameraUi(active=false){
+    const video=$('#cameraVideo');
+    const fallback=$('#cameraFallback');
+    const shutter=$('#cameraShutter');
+    const swap=$('#cameraSwap');
+    const retry=$('#cameraRetry');
+    if(video&&!active){video.hidden=true;video.srcObject=null;}
+    fallback?.classList.toggle('hidden',active);
+    if(shutter)shutter.disabled=!active;
+    swap?.classList.toggle('hidden',!active);
+    if(retry)retry.hidden=!active;
+  }
+  function stopCamera(){
+    state.cameraRequest++;
+    if(state.cameraStream){
+      state.cameraStream.getTracks().forEach(track=>track.stop());
+      state.cameraStream=null;
+    }
+    updateCameraUi(false);
+  }
   async function startCamera(){
     stopCamera();
-    if(!navigator.mediaDevices?.getUserMedia){setCameraMsg('Nincs kamera-hozzáférés: demókép készíthető.');return;}
+    const request=state.cameraRequest;
+    if(!window.isSecureContext){setCameraMsg('A kamera HTTPS-kapcsolatot igényel. Nyisd meg a nyilvános webcímen.');return;}
+    if(!navigator.mediaDevices?.getUserMedia){setCameraMsg('A böngésződ nem támogatja a kameraelérést. Használd a képkészítés gombot.');return;}
+    const allow=$('#cameraStart');
+    if(allow){allow.disabled=true;allow.textContent='Engedély kérése…';}
+    setCameraMsg('A böngésző kameraengedélyt kérhet. Válaszd az Engedélyezés lehetőséget.');
+    let stream=null;
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
-      if(state.app!=='camera'||!state.screenOn){stream.getTracks().forEach(t=>t.stop());return;}
-      state.cameraStream=stream;const video=$('#cameraVideo');if(video){video.srcObject=stream;video.hidden=false;$('#cameraFallback')?.classList.add('hidden');await video.play().catch(()=>{});} else stopCamera();
-      setCameraMsg('Élő kamera aktív · a fehér gombbal készíts fotót.');
-    }catch{setCameraMsg('Kamera nem érhető el: a gomb egy demóképet készít.');}
-  }
-  function setCameraMsg(s){const el=$('#cameraFine');if(el)el.textContent=s;}
-  function stopCamera(){if(state.cameraStream){state.cameraStream.getTracks().forEach(t=>t.stop());state.cameraStream=null;}const video=$('#cameraVideo');if(video)video.srcObject=null;}
-  function takePhoto(){
-    const canvas=document.createElement('canvas');canvas.width=270;canvas.height=360;const ctx=canvas.getContext('2d');const video=$('#cameraVideo');
-    let real=!!(state.cameraStream&&video&&video.readyState>=2&&video.videoWidth);
-    if(real){const scale=Math.max(canvas.width/video.videoWidth,canvas.height/video.videoHeight);let w=video.videoWidth*scale,h=video.videoHeight*scale;ctx.drawImage(video,(canvas.width-w)/2,(canvas.height-h)/2,w,h);}
-    else{
-      const g=ctx.createLinearGradient(0,0,270,360);g.addColorStop(0,'#424f94');g.addColorStop(.5,'#d67c9f');g.addColorStop(1,'#ffcf8b');ctx.fillStyle=g;ctx.fillRect(0,0,270,360);
-      ctx.fillStyle='#ffedcd';ctx.beginPath();ctx.arc(195,95,55,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#3c507c';ctx.beginPath();ctx.moveTo(0,260);ctx.lineTo(110,145);ctx.lineTo(225,295);ctx.lineTo(270,220);ctx.lineTo(270,360);ctx.lineTo(0,360);ctx.fill();
-      ctx.fillStyle='#203858';ctx.beginPath();ctx.moveTo(0,300);ctx.lineTo(82,235);ctx.lineTo(180,360);ctx.lineTo(0,360);ctx.fill();
-      ctx.fillStyle='#fff';ctx.font='12px sans-serif';ctx.fillText('DEMÓKÉP',13,25);
+      stream=await navigator.mediaDevices.getUserMedia({
+        audio:false,video:{facingMode:{ideal:state.cameraFacing},width:{ideal:1280},height:{ideal:960}}
+      });
+      if(request!==state.cameraRequest || state.app!=='camera' || !state.screenOn || state.locked || state.control){
+        stream.getTracks().forEach(track=>track.stop());return;
+      }
+      const video=$('#cameraVideo');
+      if(!video)throw new Error('Missing camera preview');
+      state.cameraStream=stream;
+      video.srcObject=stream;
+      video.hidden=false;
+      await video.play();
+      if(request!==state.cameraRequest || state.app!=='camera' || state.locked || state.control){
+        stopCamera();return;
+      }
+      updateCameraUi(true);
+      setCameraMsg('● Kamera aktív · készíts fotót a fehér gombbal!');
+      stream.getVideoTracks()[0]?.addEventListener('ended',()=>{
+        if(state.cameraStream===stream){stopCamera();setCameraMsg('A kamera leállt. Engedélyezd újra.');}
+      },{once:true});
+    }catch(error){
+      if(request!==state.cameraRequest)return;
+      if(stream)stream.getTracks().forEach(track=>track.stop());
+      state.cameraStream=null;
+      updateCameraUi(false);
+      setCameraMsg(cameraErrorMessage(error));
+    }finally{
+      if(request===state.cameraRequest){
+        const button=$('#cameraStart');
+        if(button){button.disabled=false;button.textContent='📷 Kamera engedélyezése';}
+      }
     }
-    state.photos.unshift({src:canvas.toDataURL('image/jpeg',.70),date:Date.now()});
-    if(state.photos.length>14)state.photos=state.photos.slice(0,14);
-    save();const thumb=$('.camera-thumb');if(thumb)thumb.style.backgroundImage=`url('${state.photos[0].src}')`;
-    toast(real?'Fotó mentve a Fotókba!':'Demókép mentve a Fotókba!');
+  }
+  function takePhoto(){
+    const video=$('#cameraVideo');
+    if(!state.cameraStream||!video||video.readyState<2||!video.videoWidth){
+      toast('Előbb engedélyezd a kamerát!');return;
+    }
+    const canvas=document.createElement('canvas');canvas.width=720;canvas.height=960;
+    const ctx=canvas.getContext('2d');
+    const scale=Math.max(canvas.width/video.videoWidth,canvas.height/video.videoHeight);
+    const w=video.videoWidth*scale,h=video.videoHeight*scale;
+    ctx.drawImage(video,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+    const image=canvas.toDataURL('image/jpeg',.74);
+    state.photos.unshift({src:image,date:Date.now()});
+    if(state.photos.length>12)state.photos=state.photos.slice(0,12);
+    save();
+    const thumb=$('.camera-thumb');if(thumb)thumb.style.backgroundImage=`url('${image}')`;
+    const flash=document.createElement('div');flash.className='camera-capture-flash';
+    $('#cameraPreview')?.appendChild(flash);
+    flash.addEventListener('animationend',()=>flash.remove(),{once:true});
+    toast('📸 Fotó mentve a Fotókba!');
+  }
+  async function loadCameraFile(file){
+    if(!file)return;
+    if(!file.type.startsWith('image/')){toast('Válassz képfájlt!');return;}
+    if(file.size>20*1024*1024){toast('Túl nagy kép (legfeljebb 20 MB).');return;}
+    const url=URL.createObjectURL(file);
+    try{
+      const img=new Image();img.src=url;
+      await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;});
+      const ratio=Math.min(1,900/img.width,1100/img.height);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(img.width*ratio));canvas.height=Math.max(1,Math.round(img.height*ratio));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      state.photos.unshift({src:canvas.toDataURL('image/jpeg',.72),date:Date.now()});
+      if(state.photos.length>12)state.photos=state.photos.slice(0,12);
+      save();
+      if(state.app==='camera'){const thumb=$('.camera-thumb');if(thumb)thumb.style.backgroundImage=`url('${state.photos[0].src}')`;}
+      toast('📸 A kép bekerült a Fotókba!');
+    }catch{toast('Nem sikerült a képet megnyitni.');}
+    finally{URL.revokeObjectURL(url);}
   }
 
   /* IDŐJÁRÁS – nem online */
@@ -506,7 +641,7 @@ body{background:#080d19}
     if(ev.target.closest('#offScreen')){state.screenOn=true;state.locked=true;render();flashScreen('wake');return;}
     if(!state.screenOn)return;
     if(ev.target.closest('#homeButton')){goHome();return;}
-    if(ev.target.closest('#controlOpen')){state.control=!state.control;render();return;}
+    if(ev.target.closest('#controlOpen')){state.control=!state.control;if(state.control&&state.app==='camera')stopCamera();render();return;}
     const urlBtn=ev.target.closest('[data-url]');if(urlBtn){browse(urlBtn.dataset.url);return;}
     const appBtn=ev.target.closest('[data-app]');if(appBtn){openApp(appBtn.dataset.app);return;}
     const noteBtn=ev.target.closest('[data-note]');if(noteBtn){state.noteId=Number(noteBtn.dataset.note);render();return;}
@@ -529,7 +664,9 @@ body{background:#080d19}
       case 'photos-back':state.currentPhoto=null;render();break;
       case 'delete-photo':if(state.currentPhoto>=1000 && confirm('Törlöd ezt a saját fotót?')){state.photos.splice(state.currentPhoto-1000,1);state.currentPhoto=null;save();render();}break;
       case 'shutter':takePhoto();break;
-      case 'camera-retry':startCamera();break;
+      case 'camera-start':startCamera();break;
+      case 'camera-switch':state.cameraFacing=state.cameraFacing==='environment'?'user':'environment';startCamera();break;
+      case 'camera-stop':stopCamera();setCameraMsg('Kamera leállítva. Az engedélyezés gombbal újraindíthatod.');break;
       case 'open-photos':openApp('photos');break;
       case 'sw-toggle':if(state.swRunning){state.swElapsed=getElapsed();state.swRunning=false;}else{state.swStart=Date.now();state.swRunning=true;}render();break;
       case 'sw-reset':state.swElapsed=0;state.swStart=Date.now();render();break;
@@ -543,6 +680,7 @@ body{background:#080d19}
       case 'music-next':case 'music-prev':state.musicTrack=(state.musicTrack+(action==='music-next'?1:tracks.length-1))%tracks.length;if(state.musicPlaying)startMusic();else render();break;
     }
   });
+  document.addEventListener('change',(ev)=>{if(ev.target.id==='cameraFile'){loadCameraFile(ev.target.files?.[0]);ev.target.value='';}});
   document.addEventListener('submit',(ev)=>{if(ev.target.id==='messageForm'){ev.preventDefault();sendMessage();}if(ev.target.id==='browserForm'){ev.preventDefault();browse($('#browserInput')?.value||'');}});
   document.addEventListener('input',(ev)=>{
     if(ev.target.id==='noteTitle'||ev.target.id==='noteBody')saveNote();
@@ -558,6 +696,7 @@ body{background:#080d19}
   let startY=null;
   screen.addEventListener('pointerdown',e=>{startY=e.clientY;});
   screen.addEventListener('pointerup',e=>{if(startY===null)return;let d=e.clientY-startY;startY=null;if(state.locked&&state.screenOn&&!state.control&&d< -45){state.locked=false;render();flashScreen('wake');}else if(!state.locked&&state.screenOn&&d>80&&e.clientY<screen.getBoundingClientRect().top+150){state.control=true;render();}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.cameraStream){stopCamera();setCameraMsg('Kamera szüneteltetve. Engedélyezd újra a folytatáshoz.');}});
   window.addEventListener('beforeunload',()=>{stopCamera();stopMusic();});
 
   // Élethű, de nem kapcsolódik valódi eszközhöz: a fényerő képernyőszűrővel változik.
