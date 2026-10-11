@@ -190,8 +190,57 @@ body{background:#080d19}
 }
 @media(prefers-reduced-motion:reduce){.phone-area,.wallpaper-glow,.app-cell,.app-icon{animation:none!important;transition:none!important}}
 
+
+/* MOBILE TOUCH: ne nyelje el a böngésző görgetése a feloldó mozdulatot */
+.lock-view{touch-action:none!important;user-select:none;-webkit-user-select:none;overscroll-behavior:contain}
+.home-indicator,.lock-circle{touch-action:manipulation}
+.app-cell,button,[data-app],[data-action]{-webkit-tap-highlight-color:transparent}
+@media(max-width:690px){.home-view,.scroll-content{overscroll-behavior:contain}}
 </style>
-  <script defer>
+  
+</head>
+<body>
+  <main class="workspace">
+    <section class="intro" aria-label="NOVA Pocket">
+      <div class="nova-brand"><span class="nova-symbol">✦</span><span>NOVA <i>POCKET</i></span></div>
+      <div class="eyebrow"><span class="live-dot"></span> SAJÁT ONLINE TELEFONOS VILÁG</div>
+      <h1>Nyisd ki.<br><span>Fedezd fel.</span><br>Éld át.</h1>
+      <p>Fedezd fel a NOVA Pocket világát: egy interaktív, magyar nyelvű webes telefont, ami laptopon és mobilon is működik. Nincs telepítés. Nincs VS Code. Csak nyisd meg, és használd.</p>
+      <div class="nova-chips"><span>✦ Mobilon teljes képernyő</span><span>✦ 11 alkalmazás</span><span>✦ Jegyzetek és fotók</span><span>✦ Látványos animációk</span></div>
+      <div class="nova-foot">Azonnal használható a böngésződben · <kbd>ESC</kbd> vissza a főképernyőre</div>
+    </section>
+
+    <section class="phone-area" aria-label="NOVA Pocket telefonos webalkalmazás">
+      <div class="phone-shadow"></div>
+      <div class="iphone" id="iphone">
+        <button class="hardware-button power" id="powerButton" aria-label="Bekapcsolás vagy zárolás" title="Bekapcsolás / zárolás"></button>
+        <button class="hardware-button volume-up" id="volumeUp" aria-label="Hangerő növelése" title="Hangerő +"></button>
+        <button class="hardware-button volume-down" id="volumeDown" aria-label="Hangerő csökkentése" title="Hangerő −"></button>
+        <div class="glass" id="screen">
+          <div class="wallpaper" id="wallpaper" aria-hidden="true">
+            <div class="wallpaper-glow glow-one"></div>
+            <div class="wallpaper-glow glow-two"></div>
+            <div class="wallpaper-glow glow-three"></div>
+          </div>
+          <div class="island" aria-hidden="true"><div class="island-lens"></div></div>
+          <div class="statusbar" id="statusbar">
+            <span id="statusTime">9:41</span>
+            <button class="status-icons" id="controlOpen" title="Vezérlőközpont" aria-label="Vezérlőközpont megnyitása">
+              <svg viewBox="0 0 24 18" width="19" height="16" aria-hidden="true"><path d="M1 14h3v4H1zM6 11h3v7H6zM11 7h3v11h-3zM16 3h3v15h-3z" fill="currentColor"/></svg>
+              <svg viewBox="0 0 24 18" width="19" height="16" aria-hidden="true"><path d="M1 6a16 16 0 0 1 22 0l-3 3a11.6 11.6 0 0 0-16 0zM6 11a9 9 0 0 1 12 0l-6 7z" fill="currentColor"/></svg>
+              <span class="battery"><span class="battery-fill"></span></span>
+            </button>
+          </div>
+          <div class="screen-view" id="view"></div>
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+          <button class="home-indicator" id="homeButton" title="Főképernyő (Esc)" aria-label="Vissza a főképernyőre"><span></span></button>
+          <div class="off-screen hidden" id="offScreen"><div class="off-tap">Koppints a felébresztéshez</div></div>
+        </div>
+      </div>
+      <div class="under-phone"><span class="under-dot"></span> KOPPINTS ÉS FEDEZD FEL</div>
+    </section>
+  </main>
+<script>
 /*
   iPhone-szimulátor – böngészős demó.
   Nem valódi iOS: hívás, SMS és időjárás csak bemutató;
@@ -516,47 +565,5 @@ body{background:#080d19}
 })();
 
 </script>
-</head>
-<body>
-  <main class="workspace">
-    <section class="intro" aria-label="NOVA Pocket">
-      <div class="nova-brand"><span class="nova-symbol">✦</span><span>NOVA <i>POCKET</i></span></div>
-      <div class="eyebrow"><span class="live-dot"></span> SAJÁT ONLINE TELEFONOS VILÁG</div>
-      <h1>Nyisd ki.<br><span>Fedezd fel.</span><br>Éld át.</h1>
-      <p>Fedezd fel a NOVA Pocket világát: egy interaktív, magyar nyelvű webes telefont, ami laptopon és mobilon is működik. Nincs telepítés. Nincs VS Code. Csak nyisd meg, és használd.</p>
-      <div class="nova-chips"><span>✦ Mobilon teljes képernyő</span><span>✦ 11 alkalmazás</span><span>✦ Jegyzetek és fotók</span><span>✦ Látványos animációk</span></div>
-      <div class="nova-foot">Azonnal használható a böngésződben · <kbd>ESC</kbd> vissza a főképernyőre</div>
-    </section>
-
-    <section class="phone-area" aria-label="NOVA Pocket telefonos webalkalmazás">
-      <div class="phone-shadow"></div>
-      <div class="iphone" id="iphone">
-        <button class="hardware-button power" id="powerButton" aria-label="Bekapcsolás vagy zárolás" title="Bekapcsolás / zárolás"></button>
-        <button class="hardware-button volume-up" id="volumeUp" aria-label="Hangerő növelése" title="Hangerő +"></button>
-        <button class="hardware-button volume-down" id="volumeDown" aria-label="Hangerő csökkentése" title="Hangerő −"></button>
-        <div class="glass" id="screen">
-          <div class="wallpaper" id="wallpaper" aria-hidden="true">
-            <div class="wallpaper-glow glow-one"></div>
-            <div class="wallpaper-glow glow-two"></div>
-            <div class="wallpaper-glow glow-three"></div>
-          </div>
-          <div class="island" aria-hidden="true"><div class="island-lens"></div></div>
-          <div class="statusbar" id="statusbar">
-            <span id="statusTime">9:41</span>
-            <button class="status-icons" id="controlOpen" title="Vezérlőközpont" aria-label="Vezérlőközpont megnyitása">
-              <svg viewBox="0 0 24 18" width="19" height="16" aria-hidden="true"><path d="M1 14h3v4H1zM6 11h3v7H6zM11 7h3v11h-3zM16 3h3v15h-3z" fill="currentColor"/></svg>
-              <svg viewBox="0 0 24 18" width="19" height="16" aria-hidden="true"><path d="M1 6a16 16 0 0 1 22 0l-3 3a11.6 11.6 0 0 0-16 0zM6 11a9 9 0 0 1 12 0l-6 7z" fill="currentColor"/></svg>
-              <span class="battery"><span class="battery-fill"></span></span>
-            </button>
-          </div>
-          <div class="screen-view" id="view"></div>
-          <div class="toast" id="toast" role="status" aria-live="polite"></div>
-          <button class="home-indicator" id="homeButton" title="Főképernyő (Esc)" aria-label="Vissza a főképernyőre"><span></span></button>
-          <div class="off-screen hidden" id="offScreen"><div class="off-tap">Koppints a felébresztéshez</div></div>
-        </div>
-      </div>
-      <div class="under-phone"><span class="under-dot"></span> KOPPINTS ÉS FEDEZD FEL</div>
-    </section>
-  </main>
 </body>
 </html>
