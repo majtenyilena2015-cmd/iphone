@@ -2,9 +2,9 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101221">
-  <title>iPhone szimulátor – Visual Studio Code projekt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080d19">
+  <title>NOVA Pocket — online telefon a böngésződben</title>
   <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color-scheme:dark;font-synthesis:none;text-rendering:optimizeLegibility}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;}body{background:#0b0c16;color:white;overflow-x:hidden}
@@ -118,6 +118,78 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
   .screen-view>div,.toast,.app-grid .app-cell,.home-dock .app-cell,.app-icon,.control-card,.setting-card,.contact-item,.note-list-item,.browser-search,.camera-stage,.dial-key,.bookmark{transition:none!important}
 }
 
+
+
+/* NOVA POCKET: önálló megjelenés és telefonos felület */
+:root{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{background:#080d19}
+.workspace{gap:clamp(45px,7vw,125px);background:radial-gradient(ellipse 650px 620px at 76% 44%,#183e726a,transparent 72%),radial-gradient(ellipse 480px 460px at 9% 10%,#4c278348,transparent 82%),#080d19}
+.workspace:before{opacity:.17;background-image:linear-gradient(#80a3e722 1px,transparent 1px),linear-gradient(90deg,#80a3e722 1px,transparent 1px);background-size:44px 44px}
+.intro{max-width:530px}
+.nova-brand{display:inline-flex;gap:12px;align-items:center;font-size:15px;font-weight:900;letter-spacing:.15em}
+.nova-brand i{font-style:normal;font-weight:500;letter-spacing:.23em;color:#9faecc}
+.nova-symbol{width:45px;height:45px;display:grid;place-items:center;border-radius:16px;font-size:25px;color:#0a1731;background:linear-gradient(135deg,#98e6fa,#c9a7fd 55%,#ff9ec7);box-shadow:0 8px 32px #b087ff55}
+.eyebrow{margin-top:55px;color:#85e6ef;font-size:11px;letter-spacing:.21em}
+.live-dot,.under-dot{background:#8fe9e3;box-shadow:0 0 13px #85eee7}
+.intro h1{font-size:clamp(49px,5.4vw,81px);line-height:1.03;letter-spacing:-.07em;margin:18px 0 24px}
+.intro h1 span{background:linear-gradient(110deg,#8be3f7,#afa5ff 58%,#ffc1e0);background-clip:text;color:transparent}
+.intro>p{max-width:480px;line-height:1.85;color:#b4bdd3}
+.nova-chips{display:flex;gap:11px;flex-wrap:wrap;margin:31px 0}
+.nova-chips span{font-size:12px;color:#e6eafa;background:#ffffff10;border:1px solid #ffffff20;border-radius:50px;padding:11px 14px;backdrop-filter:blur(7px)}
+.nova-foot{font-size:12px;color:#8e9ab5;margin-top:34px}
+.nova-foot kbd{background:#1d2740;border:1px solid #45536d;color:#e6eaff;border-radius:6px;padding:5px}
+.iphone{background:linear-gradient(125deg,#b7d2e6,#344965 19%,#141e2c 43%,#718aaa 64%,#141b29 79%,#a3c0dc);box-shadow:0 0 0 2px #6b869e,0 0 0 4px #151e2d,24px 32px 92px #000a,inset 0 0 6px 3px #151c2b}
+.wallpaper{background:radial-gradient(circle at 85% 14%,#91b3fe,transparent 44%),linear-gradient(156deg,#0a234e,#333d8b 45%,#9167bc 72%,#f4aeb7)}
+.glow-one{background:radial-gradient(ellipse at 23% 50%,#ffe9c5 0%,#a892ff 31%,#5973d4 55%,transparent 71%)}
+.glow-two{background:radial-gradient(ellipse,#6dc4f7 0%,#346aca 45%,transparent 74%)}
+.glow-three{background:radial-gradient(ellipse,#a8eaff88,transparent 75%)}
+.mini-widget{background:linear-gradient(130deg,#ffffff39,#ffffff16);border:1px solid #ffffff42;box-shadow:inset 0 1px #fff3,0 12px 25px #09164018}
+.home-dock{background:#ffffff4b;border:1px solid #ffffff3a;box-shadow:0 6px 28px #080e2433}
+.app-icon{border-radius:18px;box-shadow:0 7px 17px #0004,inset 0 1px 1px #fff7}
+.app-icon--messages{background:linear-gradient(135deg,#48e8ac,#25bd7f)}
+.app-icon--safari{background:linear-gradient(145deg,#5ed9ff,#1b68ce)}
+.app-icon--music{background:linear-gradient(140deg,#f59dca,#b34ce2)}
+.app-icon--weather{background:linear-gradient(135deg,#78cffe,#4165de)}
+.under-phone{color:#b4c5e2}
+@media(max-width:930px){.workspace{gap:22px;padding:22px}.intro{text-align:center}.nova-brand{justify-content:center}.eyebrow{justify-content:center;margin-top:26px}.intro h1{font-size:45px}.intro>p{margin-left:auto;margin-right:auto}.nova-chips{justify-content:center}.nova-foot{margin-top:20px}}
+@media(max-width:690px){
+ html,body{width:100%;height:100%;overflow:hidden}
+ .workspace{position:fixed;inset:0;height:100dvh;min-height:0;padding:0;margin:0;display:block;overflow:hidden;background:#080d19}
+ .workspace:before{display:none}
+ .intro,.under-phone,.phone-shadow{display:none!important}
+ .phone-area{width:100%;height:100%;margin:0!important;display:block!important;transform:none!important;animation:none!important}
+ .iphone{--scale:1!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;position:absolute!important;inset:0!important;transform:none!important;transform-origin:unset;border-radius:0!important;border:0!important;box-shadow:none!important}
+ #iphone.pressed{transform:none!important}
+ .glass{height:100%;width:100%;border-radius:0!important;box-shadow:none}
+ .hardware-button{display:none}
+ .island{top:max(11px,env(safe-area-inset-top))}
+ .statusbar{padding-top:max(18px,calc(env(safe-area-inset-top) + 5px))}
+ .home-indicator{bottom:max(0px,calc(env(safe-area-inset-bottom) - 5px))}
+ .home-view{padding-top:max(74px,calc(env(safe-area-inset-top) + 65px));padding-bottom:max(27px,env(safe-area-inset-bottom));overflow-y:auto}
+ .home-dock{padding:11px 5px;position:relative;flex-shrink:0}
+ .app-grid{gap:clamp(11px,2.9vh,23px) 8px}
+ .app-page{padding-top:max(57px,calc(env(safe-area-inset-top) + 48px));padding-bottom:max(28px,calc(env(safe-area-inset-bottom) + 15px))}
+ .lock-icon{top:max(85px,calc(env(safe-area-inset-top) + 69px))}
+ .lock-date{top:max(122px,calc(env(safe-area-inset-top) + 104px))}
+ .lock-clock{top:max(140px,calc(env(safe-area-inset-top) + 122px))}
+ .lock-bottom{bottom:max(40px,calc(env(safe-area-inset-bottom) + 20px))}
+ .unlock-hint{bottom:max(100px,calc(env(safe-area-inset-bottom) + 90px))}
+ .control-screen{padding-top:max(81px,calc(env(safe-area-inset-top) + 69px))}
+ .toast{top:max(62px,calc(env(safe-area-inset-top) + 56px))}
+ .off-screen{border-radius:0}
+}
+@media(max-width:690px) and (max-height:650px){
+ .widget-row .mini-widget{height:106px;padding:11px}
+ .app-grid{margin-top:15px;gap:9px 6px}
+ .app-icon{width:50px;height:50px;border-radius:15px}
+ .app-icon svg{width:28px;height:28px}
+ .home-dock .app-icon{width:50px;height:50px}
+ .home-dock{padding:8px 6px 9px}
+ .mini-weather .temp{font-size:33px}
+ .mini-date .big-date{font-size:32px}
+}
+@media(prefers-reduced-motion:reduce){.phone-area,.wallpaper-glow,.app-cell,.app-icon{animation:none!important;transition:none!important}}
+
 </style>
   <script defer>
 /*
@@ -133,7 +205,7 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
   const screen = $('#screen');
   const phone = $('#iphone');
   const toastBox = $('#toast');
-  const storageKey = 'iphone-vscode-hu-v1';
+  const storageKey = 'nova-pocket-web-hu-v1';
 
   function loadSaved() {
     try { return JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; }
@@ -141,7 +213,7 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
   }
   const saved = loadSaved();
   const defaultChats = {
-    anna: [{ from: 'them', text: 'Szia! 👋 Üdv az iPhone-demóban!' }, { from: 'them', text: 'Írj valamit, és próbáld ki az Üzenetek alkalmazást.' }],
+    anna: [{ from: 'them', text: 'Szia! 👋 Üdv az NOVA Pocketben!' }, { from: 'them', text: 'Írj valamit, és próbáld ki az Üzenetek alkalmazást.' }],
     mark: [{ from: 'them', text: 'Helló! 😎 Minden alkalmazást kipróbáltál már?' }]
   };
   const state = {
@@ -156,7 +228,7 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
     bluetooth: saved.bluetooth !== false,
     brightness: Number.isFinite(Number(saved.brightness)) ? Math.max(35, Math.min(100, Number(saved.brightness))) : 100,
     volume: 60,
-    notes: Array.isArray(saved.notes) ? saved.notes : [{ id: 1, title: 'Üdv az iPhone-odon! ✨', body: 'Ez egy működő böngészős iPhone-szimulátor.\n\nA jegyzeteidet automatikusan elmenti a böngésző.\n\nPróbáld ki a többi alkalmazást is!', edited: Date.now() }],
+    notes: Array.isArray(saved.notes) ? saved.notes : [{ id: 1, title: 'Üdv a NOVA Pocketben! ✨', body: 'Ez a NOVA Pocket böngészős telefonja.\n\nA jegyzeteidet automatikusan elmenti a böngésző.\n\nPróbáld ki a többi alkalmazást is!', edited: Date.now() }],
     noteId: null,
     chats: saved.chats && typeof saved.chats === 'object' ? saved.chats : defaultChats,
     contact: null,
@@ -447,20 +519,16 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
 </head>
 <body>
   <main class="workspace">
-    <section class="intro" aria-label="Bemutató">
-      <div class="eyebrow"><span class="live-dot"></span> INTERAKTÍV IPHONE DEMÓ</div>
-      <h1>A saját <span>iPhone-od.</span><br> Egy böngészőben.</h1>
-      <p>Oldd fel a képernyőt, nyisd meg az appokat, írj jegyzeteket, számolj, küldj demóüzeneteket, és készíts képeket. Minden egy szerkeszthető VS Code-projektben.</p>
-      <div class="feature-list">
-        <div><span class="feature-icon">✦</span> Feloldható kezdőképernyő</div>
-        <div><span class="feature-icon">✦</span> 11 használható alkalmazás</div>
-        <div><span class="feature-icon">✦</span> Automatikusan mentett jegyzetek</div>
-        <div><span class="feature-icon">✦</span> Személyre szabható kinézet</div>
-      </div>
-      <div class="desktop-hint"><kbd>ESC</kbd> = vissza a főképernyőre <span>·</span> Kattints a telefon gombjaira!</div>
+    <section class="intro" aria-label="NOVA Pocket">
+      <div class="nova-brand"><span class="nova-symbol">✦</span><span>NOVA <i>POCKET</i></span></div>
+      <div class="eyebrow"><span class="live-dot"></span> SAJÁT ONLINE TELEFONOS VILÁG</div>
+      <h1>Nyisd ki.<br><span>Fedezd fel.</span><br>Éld át.</h1>
+      <p>Fedezd fel a NOVA Pocket világát: egy interaktív, magyar nyelvű webes telefont, ami laptopon és mobilon is működik. Nincs telepítés. Nincs VS Code. Csak nyisd meg, és használd.</p>
+      <div class="nova-chips"><span>✦ Mobilon teljes képernyő</span><span>✦ 11 alkalmazás</span><span>✦ Jegyzetek és fotók</span><span>✦ Látványos animációk</span></div>
+      <div class="nova-foot">Azonnal használható a böngésződben · <kbd>ESC</kbd> vissza a főképernyőre</div>
     </section>
 
-    <section class="phone-area" aria-label="Használható iPhone szimulátor">
+    <section class="phone-area" aria-label="NOVA Pocket telefonos webalkalmazás">
       <div class="phone-shadow"></div>
       <div class="iphone" id="iphone">
         <button class="hardware-button power" id="powerButton" aria-label="Bekapcsolás vagy zárolás" title="Bekapcsolás / zárolás"></button>
@@ -487,7 +555,7 @@ h1{font-size:clamp(38px,4.1vw,65px);letter-spacing:-.065em;line-height:1.09;marg
           <div class="off-screen hidden" id="offScreen"><div class="off-tap">Koppints a felébresztéshez</div></div>
         </div>
       </div>
-      <div class="under-phone"><span class="under-dot"></span> PRÓBÁLD KI ÉLŐBEN</div>
+      <div class="under-phone"><span class="under-dot"></span> KOPPINTS ÉS FEDEZD FEL</div>
     </section>
   </main>
 </body>
